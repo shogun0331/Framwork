@@ -1,0 +1,10 @@
+{
+  "name": "com.gb.framework",
+  "displayName": "GB FrameWork",
+  "version": "1.0.0",
+  "unity": "2021.2",
+  "keywords": [ "service" ],
+  "description": "GB FrameWork Package",
+  "dependencies": {
+  }
+}
