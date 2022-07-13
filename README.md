@@ -1,4 +1,4 @@
-# Framwork
+# GB Framwork
 
 - Model
 - UI System
