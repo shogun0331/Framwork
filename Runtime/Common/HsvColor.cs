@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace OmiyaGames
+namespace GB
 {
     ///-----------------------------------------------------------------------
     /// <remarks>
