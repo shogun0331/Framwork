@@ -1,11 +1,11 @@
-namespace OmiyaGames
+namespace GB
 {
 	///-----------------------------------------------------------------------
 	/// <remarks>
-	/// <copyright file="Axis3D.cs" company="Omiya Games">
+	/// <copyright file="Axis3D.cs" company="GB">
 	/// The MIT License (MIT)
 	/// 
-	/// Copyright (c) 2014-2021 Omiya Games
+	/// Copyright (c) 2014-2021 GB
 	/// 
 	/// Permission is hereby granted, free of charge, to any person obtaining a copy
 	/// of this software and associated documentation files (the "Software"), to deal

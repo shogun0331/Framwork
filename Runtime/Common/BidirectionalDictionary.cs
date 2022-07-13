@@ -2,14 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace OmiyaGames
+namespace GB
 {
 	///-----------------------------------------------------------------------
 	/// <remarks>
-	/// <copyright file="BidirectionalDictionary.cs" company="Omiya Games">
+	/// <copyright file="BidirectionalDictionary.cs" company="GB">
 	/// The MIT License (MIT)
 	/// 
-	/// Copyright (c) 2020-2020 Omiya Games
+	/// Copyright (c) 2020-2020 GB
 	/// 
 	/// Permission is hereby granted, free of charge, to any person obtaining a copy
 	/// of this software and associated documentation files (the "Software"), to deal
