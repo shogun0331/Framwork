@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
+using GB.UI;
+
 namespace GB
 {
-
     /// <remarks>
-    /// <copyright file="Timer.cs" company="GB">
+    /// <copyright file="PresenterRegister.cs" company="GB">
     /// The MIT License (MIT)
     /// 
     /// Copyright (c) 2021 GB
@@ -26,23 +26,14 @@ namespace GB
     /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     /// THE SOFTWARE.
-
-    public class Timer
+    /// 
+    public class PresenterRegister : MonoBehaviour
     {
-        private static MonoBehaviour behaviour;
-        public delegate void Task();
+        public string type;
 
-        public static void Schedule(MonoBehaviour _behaviour, float delay, Task task)
+        void Awake()
         {
-            behaviour = _behaviour;
-            behaviour.StartCoroutine(DoTask(task, delay));
-        }
-
-        private static IEnumerator DoTask(Task task, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            task();
+            Presenter.Regist(type,GetComponent<UIScreen>());
         }
     }
-
 }

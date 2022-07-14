@@ -3,25 +3,51 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using GB.Global;
 
+
 namespace GB.UI
 {
-   public class UIManager : MonoBehaviour
+
+    /// <remarks>
+    /// <copyright file="UIManager.cs" company="GB">
+    /// The MIT License (MIT)
+    /// 
+    /// Copyright (c) 2021 GB
+    /// 
+    /// Permission is hereby granted, free of charge, to any person obtaining a copy
+    /// of this software and associated documentation files (the "Software"), to deal
+    /// in the Software without restriction, including without limitation the rights
+    /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    /// copies of the Software, and to permit persons to whom the Software is
+    /// furnished to do so, subject to the following conditions:
+    /// 
+    /// The above copyright notice and this permission notice shall be included in
+    /// all copies or substantial portions of the Software.
+    /// 
+    /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    /// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    /// THE SOFTWARE.
+
+    public class UIManager : MonoBehaviour
     {
         
         const HideFlags Flags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         public static UIManager Instance => Application.isPlaying ? ComponentSingleton<UIManager>.Get(Flags) : null;
         
+        
         private Dictionary<string, UIScreen> _screenList = new Dictionary<string, UIScreen>();
-
         private Stack<UIScreen> _screenStack = new Stack<UIScreen>();
-        private Stack<UIScreen> _popupStack = new Stack<UIScreen>();
-
+        private List<UIScreen> _popupList = new List<UIScreen>();
 
         public void Clear()
         {
             _screenList.Clear();
             _screenStack.Clear();
-            _popupStack.Clear();
+            _popupList.Clear();
+            Presenter.Clear();
         }
 
         public void ChangeScene(string sceneName)
@@ -40,56 +66,51 @@ namespace GB.UI
 
         public void ShowScreen(string name, int extraValue = 0)
         {
-            // 띄워주기 전 이전 UI 를 닫음
             _screenStack.Peek().gameObject.SetActive(false);
 
             if (_screenList.ContainsKey(name))
             {
-                _screenList[name].gameObject.SetActive(true);       // UI 활성화
+                _screenList[name].gameObject.SetActive(true);       
                 _screenStack.Push(_screenList[name]);
             }
             else
             {
-                LoadFromResources(name, extraValue);
+                LoadFromResources(name);
             }
         }
 
-        public void ShowPopup(string name, int extraValue = 0, bool isSwap = true)
+        public void ShowPopup(string name, int extraValue = 0)
         {
-            if (_popupStack.Count > 0)
+            SortingPopup();
+
+            if (_popupList.Count > 0)
             {
-                if (_popupStack.Peek() == null)
+               
+                if (_popupList[0] == null)
                 {
-                    _popupStack.Clear();
+                    _popupList.RemoveAt(0);
                     ShowPopup(name);
                     return;
                 }
-
-
-                if (_popupStack.Peek().name.Equals(name))
-                {
-                    _popupStack.Peek().SetExtraValue(extraValue);
-                    return;
-                }
-
-                if (isSwap)
-                    _popupStack.Peek().gameObject.SetActive(false);
             }
 
             if (_screenList.ContainsKey(name))
             {
                 _screenList[name].gameObject.SetActive(true);  
-                _screenList[name].SetExtraValue(extraValue);
-                _popupStack.Push(_screenList[name]);
+           
+                if(!_popupList.Contains(_screenList[name]))
+                    _popupList.Add(_screenList[name]);
+
                 _screenList[name].GetComponent<RectTransform>().SetAsLastSibling();
+                SortingPopup();
             }
             else
             {
-                LoadFromResources(name, extraValue, true);
+                LoadFromResources(name,true);
             }
         }
 
-        private void LoadFromResources(string name, int extraValue, bool isPopup = false)
+        private void LoadFromResources(string name, bool isPopup = false)
         {
             const string SCENE_PATH = "Prefab/Scene";
             const string POPUP_PATH = "Prefab/Popup";
@@ -101,7 +122,6 @@ namespace GB.UI
             else
                 screen = Resources.Load<GameObject>(string.Format("{0}/{1}", SCENE_PATH, name));
 
-            // 로드에 실패한 경우 아무것도 하지 않음
             if (screen == null)
             {
                 Debug.LogError(string.Format("can not load UI '{0}'", name));
@@ -121,22 +141,17 @@ namespace GB.UI
             screen.GetComponent<RectTransform>().offsetMax = Vector2.zero;
             screen.GetComponent<RectTransform>().offsetMin = Vector2.zero;
 
-            // set extra value
-            screen.GetComponent<UIScreen>().SetExtraValue(extraValue);
-
             _screenList.Add(name, screen.GetComponent<UIScreen>());
             if (isPopup)
-                _popupStack.Push(screen.GetComponent<UIScreen>());
+                _popupList.Add(screen.GetComponent<UIScreen>());
             else
                 _screenStack.Push(screen.GetComponent<UIScreen>());
 
+            SortingPopup();
         }
 
         public void RegistScreen(string screenName, UIScreen screen)
         {
-            Debug.Log("screenName : " + screenName);
-
-
             if (_screenList.ContainsKey(screenName))
                 return;
 
@@ -146,7 +161,6 @@ namespace GB.UI
 
         public void RegistPopup(string popupName, UIScreen screen)
         {
-            Debug.Log("popupName : " + popupName);
             _screenList.Add(popupName, screen);
             screen.gameObject.SetActive(false);
         }
@@ -162,18 +176,29 @@ namespace GB.UI
 
         public void ClosePopup()
         {
-            UIScreen popup = _popupStack.Pop();
-            popup.gameObject.SetActive(false);
+            if(_popupList.Count > 0)
+            {
+                UIScreen popup = _popupList[0];
+                popup.gameObject.SetActive(false);
+                _popupList.RemoveAt(0);
+            }
 
-            if (_popupStack.Count > 0)
-                _popupStack.Peek().gameObject.SetActive(true);
+            if (_popupList.Count > 0)
+                _popupList[0].gameObject.SetActive(true);
         }
+
+        public void ClosePopup(UIScreen screen)
+        {
+            screen.gameObject.SetActive(false);
+            _popupList.Remove(screen);
+        }
+
 
         public void OnBackKey()
         {
-            if (_popupStack.Count > 0)
+            if (_popupList.Count > 0)
             {
-                if (_popupStack.Peek().Backkey())
+                if (_popupList[0].Backkey())
                     return;
             }
 
@@ -185,7 +210,13 @@ namespace GB.UI
 
         public bool IsAlreadyPopup()
         {
-            return _popupStack.Count > 0;
+            return _popupList.Count > 0;
+        }
+
+        private void SortingPopup()
+        {
+            _popupList.Sort((tx, ty) => tx.Weight.CompareTo(ty.Weight));
+            _popupList.Reverse();
         }
 
     }
